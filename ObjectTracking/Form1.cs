@@ -127,6 +127,11 @@ namespace ObjectTracking
 
 		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
 		{
+			const int pixelatedFactor = 5;
+
+			new Pixellate(pixelatedFactor).ApplyInPlace(prevImage);
+			new Pixellate(pixelatedFactor).ApplyInPlace(image);
+
 			// Create filter
 			Subtract filter = new Subtract(new Grayscale(0.2125, 0.7154, 0.0721).Apply(prevImage));
 
@@ -134,7 +139,7 @@ namespace ObjectTracking
 			Bitmap resultImage = 
 				filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
 
-			new Threshold().Apply(resultImage);
+			new Threshold().ApplyInPlace(resultImage);
 			return resultImage;
 		}
 
@@ -150,7 +155,7 @@ namespace ObjectTracking
 
 			foreach (Rectangle rc in rects)
 			{
-				if ((rc.Width < 50) && (rc.Height < 50)) continue;
+				if ((rc.Width < 16) && (rc.Height < 16)) continue;
 
 				largeBlobRects.Add(rc);
 			}
