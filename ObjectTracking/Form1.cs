@@ -57,31 +57,6 @@ namespace ObjectTracking
 				OpenVideoSource(new FileVideoSource(openFileDialog1.FileName));
 			}
 		}
-
-
-		private void videoSourcePlayer_NewFrame(object sender, ref Bitmap image)
-		{
-			if (BlobRects == null || BlobRects.Count == 0) return;
-
-			DrawBlobs(BlobRects, image);
-		}
-		
-		private void DrawBlobs(List<Rectangle> blobRects, Bitmap image)
-		{
-			// Create graphics object from initial image
-			Graphics g = Graphics.FromImage(image);
-
-			// Draw each rectangle
-			using (Pen pen = new Pen(Color.Red, 2))
-			{
-				foreach (Rectangle rc in blobRects)
-				{
-					g.DrawRectangle(pen, rc);
-				}
-			}
-
-			g.Dispose();
-		}
 		
 		// Open video source
 		private void OpenVideoSource(IVideoSource source)
@@ -108,15 +83,49 @@ namespace ObjectTracking
 			Timer.Interval = .5;
 			Timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
 		}
+		
+		private void videoSourcePlayer_NewFrame(object sender, ref Bitmap image)
+		{
+			if (image == null) return;
+
+			//OnTimedEvent((Bitmap)image.Clone());
+
+			if (BlobRects == null || BlobRects.Count == 0) return;
+
+			DrawBlobs(BlobRects, image);
+		}
+		
+		private void DrawBlobs(List<Rectangle> blobRects, Bitmap image)
+		{
+			// Create graphics object from initial image
+			Graphics g = Graphics.FromImage(image);
+
+			// Draw each rectangle
+			using (Pen pen = new Pen(Color.Red, 2))
+			{
+				foreach (Rectangle rc in blobRects)
+				{
+					g.DrawRectangle(pen, rc);
+				}
+			}
+
+			g.Dispose();
+		}
 
 		private void OnTimedEvent(object source, ElapsedEventArgs e)
 		{
+			Bitmap image = videoSourcePlayer.GetCurrentVideoFrame();
+				
+			if (image == null) return;
+
+			OnTimedEvent(image);
+		}
+
+		private void OnTimedEvent(Bitmap image)
+		{
 			lock ( this )
             {
-				Bitmap image = videoSourcePlayer.GetCurrentVideoFrame();
-				if (image == null) return;
-						
-				if (PrevImage != null) 
+				if (PrevImage != null)
 				{
 					BlobRects = GetLocationRectangles(ThresholdImage(PrevImage, image));
 				}
@@ -127,19 +136,18 @@ namespace ObjectTracking
 
 		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
 		{
-			const int pixelatedFactor = 5;
+			//const int pixelatedFactor = 2;
 
-			new Pixellate(pixelatedFactor).ApplyInPlace(prevImage);
-			new Pixellate(pixelatedFactor).ApplyInPlace(image);
+			//new Pixellate(pixelatedFactor).ApplyInPlace(prevImage);
+			//new Pixellate(pixelatedFactor).ApplyInPlace(image);
 
 			// Create filter
 			Subtract filter = new Subtract(new Grayscale(0.2125, 0.7154, 0.0721).Apply(prevImage));
 
 			// Apply the filter
-			Bitmap resultImage = 
-				filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
+			Bitmap resultImage = filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
 
-			new Threshold().ApplyInPlace(resultImage);
+			new Threshold(40).ApplyInPlace(resultImage);
 			return resultImage;
 		}
 
@@ -155,7 +163,7 @@ namespace ObjectTracking
 
 			foreach (Rectangle rc in rects)
 			{
-				if ((rc.Width < 16) && (rc.Height < 16)) continue;
+				if ((rc.Width < 4) && (rc.Height < 4)) continue;
 
 				largeBlobRects.Add(rc);
 			}
