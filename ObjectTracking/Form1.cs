@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Threading;
+using System.Timers;
 using System.Windows.Forms;
 using AForge.Imaging;
 using AForge.Imaging.Filters;
 using AForge.Video;
-using AForge.Video.VFW;
+using AForge.Video.DirectShow;
 
 namespace ObjectTracking
 {
@@ -19,6 +20,8 @@ namespace ObjectTracking
 		public Form1()
 		{
 			InitializeComponent();
+
+			Timer = new System.Timers.Timer();
 		}
 
 		/// <summary>
@@ -40,7 +43,7 @@ namespace ObjectTracking
 
 			openFileDialog1.InitialDirectory = "C:/Users/Dominic Northey/Videos/Sky Diving";
 
-			openFileDialog1.Filter = "Video Files (*.mp4, *.wma)|*.mp4; *.wma|All files (*.*)|*.*";
+			openFileDialog1.Filter = "Video Files (*.wmv)|*.wmv|All files (*.*)|*.*";
 			openFileDialog1.FilterIndex = 1;
 			openFileDialog1.Multiselect = false;
 			openFileDialog1.RestoreDirectory = true;
@@ -51,73 +54,18 @@ namespace ObjectTracking
 
 			if (Result == DialogResult.OK)
 			{
-				 OpenVideoSource(new AVIFileVideoSource(openFileDialog1.FileName));
+				OpenVideoSource(new FileVideoSource(openFileDialog1.FileName));
 			}
 		}
-
-		private void View(object sender, EventArgs e)
-		{
-			//if (Input == null) 
-			//{
-			//    MessageBox.Show("Please Upload a video.");
-			//    return;
-			//}
-
-			//ShowAllMotion();
-
-			//videoSourcePlayer.VideoSource = Input.;
-
-			//Input.Close();
-		}
-
 
 
 		private void videoSourcePlayer_NewFrame(object sender, ref Bitmap image)
 		{
-			//if (Timer. % motionRefeshCounter == 0)
-			{
-				videoSourcePlayer.GetCurrentVideoFrame();
-				BlobRects = GetLocationRectangles(ThresholdImage(PrevImage, image));
-				PrevImage = image;
-			}
-
-			if (BlobRects.Count == 0) continue;
+			if (BlobRects == null || BlobRects.Count == 0) return;
 
 			DrawBlobs(BlobRects, image);
 		}
-
-		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
-		{
-			// Create filter
-			Subtract filter = new Subtract(prevImage);
-
-			// Apply the filter
-			Bitmap resultImage = filter.Apply(image);
-
-			new Threshold().ApplyInPlace(resultImage);
-			return resultImage;
-		}
-
-		private List<Rectangle> GetLocationRectangles(Bitmap thresholdImage)
-		{
-			BlobCounter blobCounter = new BlobCounter();
-
-			// Get object rectangles
-			blobCounter.ProcessImage(thresholdImage);
-			Rectangle[] rects = blobCounter.GetObjectsRectangles();
-						
-			List<Rectangle> largeBlobRects = new List<Rectangle>();
-
-			foreach ( Rectangle rc in rects )
-			{
-				if ( ( rc.Width < 35 ) && ( rc.Height < 35 ) ) continue;
-					
-				largeBlobRects.Add(rc);					
-			}
-
-			return largeBlobRects;
-		}
-
+		
 		private void DrawBlobs(List<Rectangle> blobRects, Bitmap image)
 		{
 			// Create graphics object from initial image
@@ -138,22 +86,76 @@ namespace ObjectTracking
 		// Open video source
 		private void OpenVideoSource(IVideoSource source)
 		{
-			// set busy cursor
-			this.Cursor = Cursors.WaitCursor;
-
+			Timer = new System.Timers.Timer();
+			PrevImage = null;
+			
 			// close previous video source
 			CloseVideoSource();
 
 			// start new video source
 			videoSourcePlayer.VideoSource = new AsyncVideoSource(source);
 			videoSourcePlayer.Start();
-			
+
+			while(!videoSourcePlayer.IsRunning)
+			{
+
+			}
+						
 			Timer.Start();
 
-			Timer.Interval = 0.30;
-			//Timer.Elapsed();
+			PrevImage = videoSourcePlayer.GetCurrentVideoFrame();
 
-			this.Cursor = Cursors.Default;
+			Timer.Interval = .5;
+			Timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
+		}
+
+		private void OnTimedEvent(object source, ElapsedEventArgs e)
+		{
+			lock ( this )
+            {
+				Bitmap image = videoSourcePlayer.GetCurrentVideoFrame();
+				if (image == null) return;
+						
+				if (PrevImage != null) 
+				{
+					BlobRects = GetLocationRectangles(ThresholdImage(PrevImage, image));
+				}
+
+				PrevImage = image;
+			}
+		}
+
+		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
+		{
+			// Create filter
+			Subtract filter = new Subtract(new Grayscale(0.2125, 0.7154, 0.0721).Apply(prevImage));
+
+			// Apply the filter
+			Bitmap resultImage = 
+				filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
+
+			new Threshold().Apply(resultImage);
+			return resultImage;
+		}
+
+		private List<Rectangle> GetLocationRectangles(Bitmap thresholdImage)
+		{
+			BlobCounter blobCounter = new BlobCounter();
+
+			// Get object rectangles
+			blobCounter.ProcessImage(thresholdImage);
+			Rectangle[] rects = blobCounter.GetObjectsRectangles();
+
+			List<Rectangle> largeBlobRects = new List<Rectangle>();
+
+			foreach (Rectangle rc in rects)
+			{
+				if ((rc.Width < 50) && (rc.Height < 50)) continue;
+
+				largeBlobRects.Add(rc);
+			}
+
+			return largeBlobRects;
 		}
 
 		// Close current video source
