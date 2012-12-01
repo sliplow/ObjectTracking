@@ -148,11 +148,32 @@ namespace ObjectTracking
 			Bitmap resultImage = filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
 
 			new Threshold(40).ApplyInPlace(resultImage);
+			
+
+			// apply the filter
+			//Bitmap tmp1 = new Edges().Apply(resultImage);
+
+			//// extract red channel from the original image
+			//IFilter extrachChannel = new ExtractChannel(RGB.R);
+			//Bitmap redChannel = extrachChannel.Apply(image);
+
+			////  merge red channel with moving object borders
+			//Merge mergeFilter = new Merge();
+			//mergeFilter.OverlayImage = tmp1;
+			//Bitmap tmp2 = mergeFilter.Apply(redChannel);
+			
+			//// replace red channel in the original image
+			//ReplaceChannel replaceChannel = new ReplaceChannel(RGB.R);
+			//replaceChannel.ChannelImage = tmp2;
+			//Bitmap tmp3 = replaceChannel.Apply(image);
+
 			return resultImage;
 		}
 
 		private List<Rectangle> GetLocationRectangles(Bitmap thresholdImage)
 		{
+			const int size = 9;
+
 			BlobCounter blobCounter = new BlobCounter();
 
 			// Get object rectangles
@@ -163,7 +184,7 @@ namespace ObjectTracking
 
 			foreach (Rectangle rc in rects)
 			{
-				if ((rc.Width < 4) && (rc.Height < 4)) continue;
+				if ((rc.Width < size) && (rc.Height < size*2.5)) continue;
 
 				largeBlobRects.Add(rc);
 			}
