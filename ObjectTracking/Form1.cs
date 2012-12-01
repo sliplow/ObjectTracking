@@ -214,5 +214,20 @@ namespace ObjectTracking
 			// stop timers
 			Timer.Stop();
 		}
+
+		private void Pause_Click(object sender, EventArgs e)
+		{
+			if (videoSourcePlayer.IsRunning)
+			{
+				// TODO: Change this to pause.
+				videoSourcePlayer.Stop();
+
+				Pause.Text = "Continue";
+				return;
+			}
+
+			Pause.Text = "Start";
+			videoSourcePlayer.Start();
+		}
 	}
 }

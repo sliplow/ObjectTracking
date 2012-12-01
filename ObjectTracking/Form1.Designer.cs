@@ -40,13 +40,14 @@
 			this.top = new System.Windows.Forms.Label();
 			this.width = new System.Windows.Forms.Label();
 			this.height = new System.Windows.Forms.Label();
+			this.Pause = new System.Windows.Forms.Button();
 			this.dataRepeater1.ItemTemplate.SuspendLayout();
 			this.dataRepeater1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// button1
 			// 
-			this.button1.Location = new System.Drawing.Point(589, 456);
+			this.button1.Location = new System.Drawing.Point(726, 456);
 			this.button1.Name = "button1";
 			this.button1.Size = new System.Drawing.Size(75, 23);
 			this.button1.TabIndex = 0;
@@ -164,11 +165,22 @@
 			this.height.TabIndex = 7;
 			this.height.Text = "label9";
 			// 
+			// Pause
+			// 
+			this.Pause.Location = new System.Drawing.Point(466, 456);
+			this.Pause.Name = "Pause";
+			this.Pause.Size = new System.Drawing.Size(61, 22);
+			this.Pause.TabIndex = 5;
+			this.Pause.Text = "Pause";
+			this.Pause.UseVisualStyleBackColor = true;
+			this.Pause.Click += new System.EventHandler(this.Pause_Click);
+			// 
 			// Form1
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(1283, 491);
+			this.Controls.Add(this.Pause);
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.dataRepeater1);
 			this.Controls.Add(this.videoSourcePlayer);
@@ -197,5 +209,6 @@
 		private System.Windows.Forms.Label top;
 		private System.Windows.Forms.Label left;
 		private System.Windows.Forms.Label label5;
+		private System.Windows.Forms.Button Pause;
 	}
 }
