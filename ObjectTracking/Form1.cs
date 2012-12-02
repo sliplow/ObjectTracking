@@ -17,6 +17,7 @@ namespace ObjectTracking
 		private List<Rectangle> BlobRects { get; set; }
 		private Bitmap PrevImage { get; set; }
 		private System.Timers.Timer Timer { get; set; }
+		private bool UpdateBg { get; set; }
 		 
 		public Form1()
 		{
@@ -89,7 +90,7 @@ namespace ObjectTracking
 		{
 			if (image == null) return;
 
-			//OnTimedEvent((Bitmap)image.Clone());
+			OnTimedEvent((Bitmap)image.Clone());
 
 			if (BlobRects == null || BlobRects.Count == 0) return;
 
@@ -115,15 +116,19 @@ namespace ObjectTracking
 
 		private void OnTimedEvent(object source, ElapsedEventArgs e)
 		{
-			Bitmap image = videoSourcePlayer.GetCurrentVideoFrame();
-				
-			if (image == null) return;
+			UpdateBg = true;
 
-			OnTimedEvent(image);
+			//Bitmap image = videoSourcePlayer.GetCurrentVideoFrame();
+				
+			//if (image == null) return;
+
+			//OnTimedEvent(image);
 		}
 
 		private void OnTimedEvent(Bitmap image)
 		{
+			if(!UpdateBg) return;
+
 			lock ( this )
             {
 				if (PrevImage != null)
@@ -133,6 +138,8 @@ namespace ObjectTracking
 				
 				PrevImage = image;
 			}
+
+			UpdateBg = false;
 		}
 
 		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
