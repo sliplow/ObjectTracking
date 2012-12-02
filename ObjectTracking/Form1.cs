@@ -82,7 +82,7 @@ namespace ObjectTracking
 
 			PrevImage = videoSourcePlayer.GetCurrentVideoFrame();
 
-			Timer.Interval = 2;
+			Timer.Interval = 200;
 			Timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
 		}
 		
@@ -150,10 +150,10 @@ namespace ObjectTracking
 			new Pixellate(pixelatedFactor).ApplyInPlace(image);
 
 			// Create filter
-			Subtract filter = new Subtract(new Grayscale(0.2125, 0.7154, 0.0721).Apply(prevImage));
+			Subtract filter = new Subtract(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
 
 			// Apply the filter
-			Bitmap resultImage = filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
+			Bitmap resultImage = filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(prevImage));
 
 			new Threshold(120).ApplyInPlace(resultImage);
 			
@@ -234,11 +234,11 @@ namespace ObjectTracking
 				// TODO: Change this to pause.
 				videoSourcePlayer.Stop();
 
-				Pause.Text = "Continue";
+				Pause.Text = "Start";
 				return;
 			}
 
-			Pause.Text = "Start";
+			Pause.Text = "Stop";
 			videoSourcePlayer.Start();
 		}
 	}
