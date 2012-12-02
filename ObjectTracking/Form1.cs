@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Timers;
 using System.Windows.Forms;
@@ -80,7 +81,7 @@ namespace ObjectTracking
 
 			PrevImage = videoSourcePlayer.GetCurrentVideoFrame();
 
-			Timer.Interval = .5;
+			Timer.Interval = 2;
 			Timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
 		}
 		
@@ -129,17 +130,17 @@ namespace ObjectTracking
 				{
 					BlobRects = GetLocationRectangles(ThresholdImage(PrevImage, image));
 				}
-
+				
 				PrevImage = image;
 			}
 		}
 
 		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
 		{
-			//const int pixelatedFactor = 2;
+			const int pixelatedFactor = 5;
 
-			//new Pixellate(pixelatedFactor).ApplyInPlace(prevImage);
-			//new Pixellate(pixelatedFactor).ApplyInPlace(image);
+			new Pixellate(pixelatedFactor).ApplyInPlace(prevImage);
+			new Pixellate(pixelatedFactor).ApplyInPlace(image);
 
 			// Create filter
 			Subtract filter = new Subtract(new Grayscale(0.2125, 0.7154, 0.0721).Apply(prevImage));
@@ -147,7 +148,7 @@ namespace ObjectTracking
 			// Apply the filter
 			Bitmap resultImage = filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
 
-			new Threshold(40).ApplyInPlace(resultImage);
+			new Threshold(120).ApplyInPlace(resultImage);
 			
 
 			// apply the filter
@@ -180,7 +181,10 @@ namespace ObjectTracking
 			blobCounter.ProcessImage(thresholdImage);
 			Rectangle[] rects = blobCounter.GetObjectsRectangles();
 
+
 			List<Rectangle> largeBlobRects = new List<Rectangle>();
+
+			//if(rects.Count() == 0) return largeBlobRects;
 
 			foreach (Rectangle rc in rects)
 			{
@@ -188,8 +192,9 @@ namespace ObjectTracking
 
 				largeBlobRects.Add(rc);
 			}
-
-			return largeBlobRects;
+			
+			// TODO check this works.
+			return largeBlobRects.OrderBy(x => x.Height + x.Width).ToList();
 		}
 
 		// Close current video source
