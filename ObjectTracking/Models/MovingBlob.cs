@@ -19,6 +19,9 @@ namespace ObjectTracking.Models
 		public Point Motion { get; set; }
 		public Direction Direction { get; set; }
 
+		public int MotionLeft { get { return Motion.X; } }
+		public int MotionTop { get { return Motion.Y; } }
+
 		public MovingBlob(Rectangle rect)
 		{
 			Location = rect.Location;
@@ -28,7 +31,7 @@ namespace ObjectTracking.Models
 		public bool IsSameObject(Rectangle rectangle)
 		{
 			if((Math.Abs(rectangle.Left - Left) + 
-				Math.Abs(rectangle.Top - Top)) > 200)
+				Math.Abs(rectangle.Top - Top)) > 150)
 			{			
 				return false;
 			}
@@ -49,16 +52,16 @@ namespace ObjectTracking.Models
 					{
 						if (Motion.Y > detectionVariation)
 						{
-							Direction = Direction.UpRight;
+							Direction = Direction.DownLeft;
 
 							return;
 						}
-						Direction = Direction.DownRight;
+						Direction = Direction.UpLeft;
 
 						return;
 					}
 
-					Direction = Direction.Right;
+					Direction = Direction.Left;
 				}
 				else
 				{
@@ -66,16 +69,16 @@ namespace ObjectTracking.Models
 					{
 						if (Motion.Y > detectionVariation)
 						{
-							Direction = Direction.UpLeft;
+							Direction = Direction.DownRight;
 
 							return;
 						}
-						Direction = Direction.DownLeft;
+						Direction = Direction.UpRight;
 
 						return;
 					}
 
-					Direction = Direction.Left;
+					Direction = Direction.Right;
 				}
 			}
 			else
@@ -84,11 +87,11 @@ namespace ObjectTracking.Models
 				{
 					if (Motion.Y > detectionVariation)
 					{
-						Direction = Direction.Up;
+						Direction = Direction.Down;
 
 						return;
 					}
-					Direction = Direction.Down;
+					Direction = Direction.Up;
 
 					return;
 				}

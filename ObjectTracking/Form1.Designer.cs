@@ -89,7 +89,7 @@
 			this.dataRepeater1.ItemTemplate.Controls.Add(this.label4);
 			this.dataRepeater1.ItemTemplate.Controls.Add(this.label3);
 			this.dataRepeater1.ItemTemplate.Controls.Add(this.label2);
-			this.dataRepeater1.ItemTemplate.Size = new System.Drawing.Size(322, 99);
+			this.dataRepeater1.ItemTemplate.Size = new System.Drawing.Size(322, 54);
 			this.dataRepeater1.Location = new System.Drawing.Point(941, 33);
 			this.dataRepeater1.Name = "dataRepeater1";
 			this.dataRepeater1.Size = new System.Drawing.Size(330, 427);
@@ -99,7 +99,7 @@
 			// motionY
 			// 
 			this.motionY.AutoSize = true;
-			this.motionY.Location = new System.Drawing.Point(277, 30);
+			this.motionY.Location = new System.Drawing.Point(277, 29);
 			this.motionY.Name = "motionY";
 			this.motionY.Size = new System.Drawing.Size(41, 13);
 			this.motionY.TabIndex = 13;
@@ -108,7 +108,7 @@
 			// motionX
 			// 
 			this.motionX.AutoSize = true;
-			this.motionX.Location = new System.Drawing.Point(189, 30);
+			this.motionX.Location = new System.Drawing.Point(195, 29);
 			this.motionX.Name = "motionX";
 			this.motionX.Size = new System.Drawing.Size(29, 13);
 			this.motionX.TabIndex = 12;
@@ -117,25 +117,25 @@
 			// label9
 			// 
 			this.label9.AutoSize = true;
-			this.label9.Location = new System.Drawing.Point(221, 29);
+			this.label9.Location = new System.Drawing.Point(224, 29);
 			this.label9.Name = "label9";
-			this.label9.Size = new System.Drawing.Size(59, 13);
+			this.label9.Size = new System.Drawing.Size(52, 13);
 			this.label9.TabIndex = 11;
-			this.label9.Text = "Motion Up:";
+			this.label9.Text = "Motion Y:";
 			// 
 			// label8
 			// 
 			this.label8.AutoSize = true;
-			this.label8.Location = new System.Drawing.Point(127, 30);
+			this.label8.Location = new System.Drawing.Point(136, 29);
 			this.label8.Name = "label8";
-			this.label8.Size = new System.Drawing.Size(66, 13);
+			this.label8.Size = new System.Drawing.Size(55, 13);
 			this.label8.TabIndex = 10;
-			this.label8.Text = "Motion Left: ";
+			this.label8.Text = "Motion X: ";
 			// 
 			// direction
 			// 
 			this.direction.AutoSize = true;
-			this.direction.Location = new System.Drawing.Point(86, 30);
+			this.direction.Location = new System.Drawing.Point(85, 29);
 			this.direction.Name = "direction";
 			this.direction.Size = new System.Drawing.Size(35, 13);
 			this.direction.TabIndex = 9;
@@ -144,7 +144,7 @@
 			// label6
 			// 
 			this.label6.AutoSize = true;
-			this.label6.Location = new System.Drawing.Point(3, 30);
+			this.label6.Location = new System.Drawing.Point(3, 29);
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(90, 13);
 			this.label6.TabIndex = 8;

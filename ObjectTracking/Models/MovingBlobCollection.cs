@@ -10,16 +10,21 @@ namespace ObjectTracking.Models
 			foreach(Rectangle rect in newRects)
 			{
 				MovingBlob blob = new MovingBlob(rect);
-								
-				foreach(Rectangle prevRect in prevRects)
-				{
-					if (blob.IsSameObject(prevRect))
-					{
-						prevRects.Remove(prevRect);
-						this.Add(blob);
 
-						return;
-					}
+				GetPreviousPosition(prevRects, blob);
+			}
+		}
+
+		private void GetPreviousPosition(List<Rectangle> prevRects, MovingBlob blob)
+		{
+			foreach (Rectangle prevRect in prevRects)
+			{
+				if (blob.IsSameObject(prevRect))
+				{
+					prevRects.Remove(prevRect);
+					this.Add(blob);
+
+					return;
 				}
 			}
 		}

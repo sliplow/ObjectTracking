@@ -85,7 +85,7 @@ namespace ObjectTracking
 
 			PrevImage = videoSourcePlayer.GetCurrentVideoFrame();
 
-			Timer.Interval = 820;
+			Timer.Interval = 1820;
 			Timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
 		}
 		
@@ -120,34 +120,19 @@ namespace ObjectTracking
 		private void OnTimedEvent(object source, ElapsedEventArgs e)
 		{
 			UpdateBg = true;
-
-			//Bitmap image = videoSourcePlayer.GetCurrentVideoFrame();
-				
-			//if (image == null) return;
-
-			//OnTimedEvent(image);
 		}
 
 		private void OnTimedEvent(Bitmap image)
 		{
 			if(!UpdateBg) return;
 
-			lock (this)
-            {
 				if (PrevImage != null)
 				{
-					//  merge red channel with moving object borders
 					BlobRects = UpdateBlobPostion(GetLocationRectangles(
 						(ThresholdImage(PrevImage, image))));
-
-					// replace red channel in the original image
-					//ReplaceChannel replaceChannel = new ReplaceChannel(RGB.R);
-					//replaceChannel.ChannelImage = tmp2;
-					//Bitmap tmp3 = replaceChannel.Apply(image);
 				}
 				
 				PrevImage = image;
-			}
 
 			UpdateBg = false;
 		}
@@ -156,20 +141,31 @@ namespace ObjectTracking
 		{
 			if(BlobRects == null) return new List<Rectangle>();
 
-			MovingBlobCollection movingBlobs = new MovingBlobCollection(list, BlobRects);
+			MovingBlobCollection movingBlobs = new MovingBlobCollection(list, BlobRects.ToList());
 
 			left.DataBindings.Clear();
 			top.DataBindings.Clear();
 			width.DataBindings.Clear();
 			height.DataBindings.Clear();
-			
-			left.DataBindings.Add(new Binding("text", movingBlobs, "Left"));
-			top.DataBindings.Add(new Binding("text", movingBlobs, "Top"));
-			height.DataBindings.Add(new Binding("text", movingBlobs, "Height"));
-			width.DataBindings.Add(new Binding("text", movingBlobs, "Width"));
-			
-			dataRepeater1.Invoke((MethodInvoker)delegate { dataRepeater1.DataSource = movingBlobs; });
 
+			motionX.DataBindings.Clear();
+			motionY.DataBindings.Clear();
+			direction.DataBindings.Clear();
+
+			
+			left.DataBindings.Add(new Binding("Text", movingBlobs, "Left"));
+			top.DataBindings.Add(new Binding("Text", movingBlobs, "Top"));
+			height.DataBindings.Add(new Binding("Text", movingBlobs, "Height"));
+			width.DataBindings.Add(new Binding("Text", movingBlobs, "Width"));
+
+			motionX.DataBindings.Add(new Binding("Text", movingBlobs, "MotionLeft"));
+			motionY.DataBindings.Add(new Binding("Text", movingBlobs, "MotionTop"));
+			direction.DataBindings.Add(new Binding("Text", movingBlobs, "Direction"));
+			
+			if (dataRepeater1.Enabled)
+			{
+				dataRepeater1.Invoke((MethodInvoker)delegate { dataRepeater1.DataSource = movingBlobs; });
+			}
 			return list;
 		}
 
@@ -180,6 +176,7 @@ namespace ObjectTracking
 
 			FiltersSequence processingFilter = new FiltersSequence();
 			processingFilter.Add(new Difference(prevImage));
+			processingFilter.Add(new Pixellate());
 			processingFilter.Add(new Grayscale(0.2125, 0.7154, 0.0721));
 			processingFilter.Add(new Threshold(45));
 			
