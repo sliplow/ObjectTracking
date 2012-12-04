@@ -237,7 +237,7 @@
 			this.Pause.Name = "Pause";
 			this.Pause.Size = new System.Drawing.Size(61, 22);
 			this.Pause.TabIndex = 5;
-			this.Pause.Text = "Start";
+			this.Pause.Text = "Stop";
 			this.Pause.UseVisualStyleBackColor = true;
 			this.Pause.Click += new System.EventHandler(this.Pause_Click);
 			// 

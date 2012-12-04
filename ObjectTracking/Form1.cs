@@ -9,6 +9,7 @@ using AForge.Imaging;
 using AForge.Imaging.Filters;
 using AForge.Video;
 using AForge.Video.DirectShow;
+using ObjectTracking.Models;
 
 namespace ObjectTracking
 {
@@ -24,6 +25,7 @@ namespace ObjectTracking
 			InitializeComponent();
 
 			Timer = new System.Timers.Timer();
+			Pause.Visible = false;
 		}
 
 		/// <summary>
@@ -79,10 +81,11 @@ namespace ObjectTracking
 			}
 						
 			Timer.Start();
+			Pause.Visible = true;
 
 			PrevImage = videoSourcePlayer.GetCurrentVideoFrame();
 
-			Timer.Interval = 200;
+			Timer.Interval = 820;
 			Timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
 		}
 		
@@ -129,11 +132,18 @@ namespace ObjectTracking
 		{
 			if(!UpdateBg) return;
 
-			lock ( this )
+			lock (this)
             {
 				if (PrevImage != null)
 				{
-					BlobRects = GetLocationRectangles(ThresholdImage(PrevImage, image));
+					//  merge red channel with moving object borders
+					BlobRects = UpdateBlobPostion(GetLocationRectangles(
+						(ThresholdImage(PrevImage, image))));
+
+					// replace red channel in the original image
+					//ReplaceChannel replaceChannel = new ReplaceChannel(RGB.R);
+					//replaceChannel.ChannelImage = tmp2;
+					//Bitmap tmp3 = replaceChannel.Apply(image);
 				}
 				
 				PrevImage = image;
@@ -142,45 +152,45 @@ namespace ObjectTracking
 			UpdateBg = false;
 		}
 
+		private List<Rectangle> UpdateBlobPostion(List<Rectangle> list)
+		{
+			if(BlobRects == null) return new List<Rectangle>();
+
+			MovingBlobCollection movingBlobs = new MovingBlobCollection(list, BlobRects);
+
+			left.DataBindings.Clear();
+			top.DataBindings.Clear();
+			width.DataBindings.Clear();
+			height.DataBindings.Clear();
+			
+			left.DataBindings.Add(new Binding("text", movingBlobs, "Left"));
+			top.DataBindings.Add(new Binding("text", movingBlobs, "Top"));
+			height.DataBindings.Add(new Binding("text", movingBlobs, "Height"));
+			width.DataBindings.Add(new Binding("text", movingBlobs, "Width"));
+			
+			dataRepeater1.Invoke((MethodInvoker)delegate { dataRepeater1.DataSource = movingBlobs; });
+
+			return list;
+		}
+
 		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
 		{
-			const int pixelatedFactor = 5;
+			// create filter
+			new MoveTowards(image).ApplyInPlace(prevImage);
 
-			new Pixellate(pixelatedFactor).ApplyInPlace(prevImage);
-			new Pixellate(pixelatedFactor).ApplyInPlace(image);
-
-			// Create filter
-			Subtract filter = new Subtract(new Grayscale(0.2125, 0.7154, 0.0721).Apply(image));
-
-			// Apply the filter
-			Bitmap resultImage = filter.Apply(new Grayscale(0.2125, 0.7154, 0.0721).Apply(prevImage));
-
-			new Threshold(120).ApplyInPlace(resultImage);
+			FiltersSequence processingFilter = new FiltersSequence();
+			processingFilter.Add(new Difference(prevImage));
+			processingFilter.Add(new Grayscale(0.2125, 0.7154, 0.0721));
+			processingFilter.Add(new Threshold(45));
 			
-
 			// apply the filter
-			//Bitmap tmp1 = new Edges().Apply(resultImage);
-
-			//// extract red channel from the original image
-			//IFilter extrachChannel = new ExtractChannel(RGB.R);
-			//Bitmap redChannel = extrachChannel.Apply(image);
-
-			////  merge red channel with moving object borders
-			//Merge mergeFilter = new Merge();
-			//mergeFilter.OverlayImage = tmp1;
-			//Bitmap tmp2 = mergeFilter.Apply(redChannel);
 			
-			//// replace red channel in the original image
-			//ReplaceChannel replaceChannel = new ReplaceChannel(RGB.R);
-			//replaceChannel.ChannelImage = tmp2;
-			//Bitmap tmp3 = replaceChannel.Apply(image);
-
-			return resultImage;
+			return processingFilter.Apply(image);
 		}
 
 		private List<Rectangle> GetLocationRectangles(Bitmap thresholdImage)
 		{
-			const int size = 9;
+			int size = thresholdImage.Size.Width / 20;
 
 			BlobCounter blobCounter = new BlobCounter();
 
@@ -201,7 +211,7 @@ namespace ObjectTracking
 			}
 			
 			// TODO check this works.
-			return largeBlobRects.OrderBy(x => x.Height + x.Width).ToList();
+			return largeBlobRects.OrderBy(x => x.Height * x.Width).ToList();
 		}
 
 		// Close current video source
