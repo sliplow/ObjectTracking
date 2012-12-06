@@ -62,7 +62,10 @@ namespace ObjectTracking
 			}
 		}
 		
-		// Open video source
+		/// <summary>
+		/// Based off www.codeproject.com/Articles/10248/Motion-Detection-Algorithms
+		/// </summary>
+		/// <param name="source"></param>
 		private void OpenVideoSource(IVideoSource source)
 		{
 			Timer = new System.Timers.Timer();
@@ -75,20 +78,24 @@ namespace ObjectTracking
 			videoSourcePlayer.VideoSource = new AsyncVideoSource(source);
 			videoSourcePlayer.Start();
 
-			while(!videoSourcePlayer.IsRunning)
-			{
-
-			}
+			// Wait until video has loaded
+			while(!videoSourcePlayer.IsRunning){}
 						
 			Timer.Start();
 			Pause.Visible = true;
 
 			PrevImage = videoSourcePlayer.GetCurrentVideoFrame();
 
+			// Duration between blob updates
 			Timer.Interval = 1820;
 			Timer.Elapsed += new ElapsedEventHandler(OnTimedEvent);
 		}
 		
+		/// <summary>
+		/// This runs everytime a new frame is shown in the current video
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="image"></param>
 		private void videoSourcePlayer_NewFrame(object sender, ref Bitmap image)
 		{
 			if (image == null) return;
@@ -100,6 +107,11 @@ namespace ObjectTracking
 			DrawBlobs(BlobRects, image);
 		}
 		
+		/// <summary>
+		/// Based off www.codeproject.com/Articles/10248/Motion-Detection-Algorithms
+		/// </summary>
+		/// <param name="blobRects"></param>
+		/// <param name="image"></param>
 		private void DrawBlobs(List<Rectangle> blobRects, Bitmap image)
 		{
 			// Create graphics object from initial image
@@ -119,6 +131,8 @@ namespace ObjectTracking
 
 		private void OnTimedEvent(object source, ElapsedEventArgs e)
 		{
+			// Tell the video to update the position data
+
 			UpdateBg = true;
 		}
 
@@ -126,13 +140,16 @@ namespace ObjectTracking
 		{
 			if(!UpdateBg) return;
 
-				if (PrevImage != null)
-				{
-					BlobRects = UpdateBlobPostion(GetLocationRectangles(
-						(ThresholdImage(PrevImage, image))));
-				}
+			// If it is time to update blob position data
+			if (PrevImage != null)
+			{
+				// Get new blob positions
+
+				BlobRects = UpdateBlobPostion(GetLocationRectangles(
+					(ThresholdImage(PrevImage, image))));
+			}
 				
-				PrevImage = image;
+			PrevImage = image;
 
 			UpdateBg = false;
 		}
@@ -143,6 +160,10 @@ namespace ObjectTracking
 
 			MovingBlobCollection movingBlobs = new MovingBlobCollection(list, BlobRects.ToList());
 
+			movingBlobs.OrderByDescending(x => x.Height * x.Width);
+
+			// Clear Bindings
+
 			left.DataBindings.Clear();
 			top.DataBindings.Clear();
 			width.DataBindings.Clear();
@@ -152,7 +173,8 @@ namespace ObjectTracking
 			motionY.DataBindings.Clear();
 			direction.DataBindings.Clear();
 
-			
+			// Add new postion data to the repeater collection
+
 			left.DataBindings.Add(new Binding("Text", movingBlobs, "Left"));
 			top.DataBindings.Add(new Binding("Text", movingBlobs, "Top"));
 			height.DataBindings.Add(new Binding("Text", movingBlobs, "Height"));
@@ -164,11 +186,19 @@ namespace ObjectTracking
 			
 			if (dataRepeater1.Enabled)
 			{
+				// databind the list as a datasource.
+
 				dataRepeater1.Invoke((MethodInvoker)delegate { dataRepeater1.DataSource = movingBlobs; });
 			}
 			return list;
 		}
 
+		/// <summary>
+		/// Based off www.codeproject.com/Articles/10248/Motion-Detection-Algorithms
+		/// </summary>
+		/// <param name="prevImage"></param>
+		/// <param name="image"></param>
+		/// <returns></returns>
 		private Bitmap ThresholdImage(Bitmap prevImage, Bitmap image)
 		{
 			// create filter
@@ -185,20 +215,22 @@ namespace ObjectTracking
 			return processingFilter.Apply(image);
 		}
 
+		/// <summary>
+		/// Based off www.codeproject.com/Articles/10248/Motion-Detection-Algorithms
+		/// </summary>
+		/// <param name="thresholdImage"></param>
+		/// <returns></returns>
 		private List<Rectangle> GetLocationRectangles(Bitmap thresholdImage)
 		{
 			int size = thresholdImage.Size.Width / 20;
 
 			BlobCounter blobCounter = new BlobCounter();
 
-			// Get object rectangles
 			blobCounter.ProcessImage(thresholdImage);
 			Rectangle[] rects = blobCounter.GetObjectsRectangles();
 
 
 			List<Rectangle> largeBlobRects = new List<Rectangle>();
-
-			//if(rects.Count() == 0) return largeBlobRects;
 
 			foreach (Rectangle rc in rects)
 			{
@@ -207,11 +239,12 @@ namespace ObjectTracking
 				largeBlobRects.Add(rc);
 			}
 			
-			// TODO check this works.
 			return largeBlobRects.OrderBy(x => x.Height * x.Width).ToList();
 		}
 
-		// Close current video source
+		/// <summary>
+		/// Based off www.codeproject.com/Articles/10248/Motion-Detection-Algorithms
+		/// </summary>
 		private void CloseVideoSource()
 		{
 			// set busy cursor
@@ -238,7 +271,7 @@ namespace ObjectTracking
 		{
 			if (videoSourcePlayer.IsRunning)
 			{
-				// TODO: Change this to pause.
+				// Stop video
 				videoSourcePlayer.Stop();
 
 				Pause.Text = "Start";
@@ -246,6 +279,8 @@ namespace ObjectTracking
 			}
 
 			Pause.Text = "Stop";
+
+			// Restart Video
 			videoSourcePlayer.Start();
 		}
 	}

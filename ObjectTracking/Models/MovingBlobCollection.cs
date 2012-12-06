@@ -11,19 +11,24 @@ namespace ObjectTracking.Models
 			{
 				MovingBlob blob = new MovingBlob(rect);
 
-				GetPreviousPosition(prevRects, blob);
+				// Work out the blob's previous position.
+
+				SetPreviousPosition(prevRects, blob);
 			}
 		}
 
-		private void GetPreviousPosition(List<Rectangle> prevRects, MovingBlob blob)
+		private void SetPreviousPosition(List<Rectangle> prevRects, MovingBlob blob)
 		{
 			foreach (Rectangle prevRect in prevRects)
 			{
 				if (blob.IsSameObject(prevRect))
 				{
+					blob.SetMotion(prevRect);
+					
+					// Remove from the previous array so that other objects dont think they are this blob.
 					prevRects.Remove(prevRect);
 					this.Add(blob);
-
+					
 					return;
 				}
 			}

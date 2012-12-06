@@ -30,16 +30,24 @@ namespace ObjectTracking.Models
 
 		public bool IsSameObject(Rectangle rectangle)
 		{
-			if((Math.Abs(rectangle.Left - Left) + 
-				Math.Abs(rectangle.Top - Top)) > 150)
+			// If total motion is more than 150 pixels then we assume its different object.
+
+			if((Math.Abs(Left - rectangle.Left) + 
+				Math.Abs(Top - rectangle.Top)) > 150)
 			{			
 				return false;
 			}
-
-			Motion = new Point(rectangle.Left - Left, rectangle.Top - Top);
-		
-			DetectMotionDirection();
+					
 			return true;
+		}
+
+		public void SetMotion(Rectangle rectangle)
+		{
+			// Work out object motion
+			Motion = new Point(Left - rectangle.Left, Top - rectangle.Top);
+
+			// Detection the direction of the motion.
+			DetectMotionDirection();
 		}
 
 		private void DetectMotionDirection()
@@ -52,16 +60,16 @@ namespace ObjectTracking.Models
 					{
 						if (Motion.Y > detectionVariation)
 						{
-							Direction = Direction.DownLeft;
+							Direction = Direction.UpRight;
 
 							return;
 						}
-						Direction = Direction.UpLeft;
+						Direction = Direction.DownRight;
 
 						return;
 					}
 
-					Direction = Direction.Left;
+					Direction = Direction.Right;
 				}
 				else
 				{
@@ -69,16 +77,16 @@ namespace ObjectTracking.Models
 					{
 						if (Motion.Y > detectionVariation)
 						{
-							Direction = Direction.DownRight;
+							Direction = Direction.UpLeft;
 
 							return;
 						}
-						Direction = Direction.UpRight;
+						Direction = Direction.DownLeft;
 
 						return;
 					}
 
-					Direction = Direction.Right;
+					Direction = Direction.Left;
 				}
 			}
 			else
@@ -87,11 +95,11 @@ namespace ObjectTracking.Models
 				{
 					if (Motion.Y > detectionVariation)
 					{
-						Direction = Direction.Down;
+						Direction = Direction.Up;
 
 						return;
 					}
-					Direction = Direction.Up;
+					Direction = Direction.Down;
 
 					return;
 				}
